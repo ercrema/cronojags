@@ -1,18 +1,41 @@
-oxcalSingleDate<-function(id="tmp01",date,error,oxcalName="singleDate",OxCalDirectory="~/OxCal/",OxCalExecute="/Applications/OxCal/bin/OxCalMac",BP=TRUE,raw=TRUE,plot=TRUE)
+oxcalSingleDate<-function(id="tmp01",date,error,oxcalName="singleDate",OxCalDirectory="~/OxCal/",OxCalExecute="/Applications/OxCal/bin/OxCalMac",BP=TRUE,plot=TRUE,curve=c("IntCal13","ShCal13","Marine13"),DeltaR=0,DeltaRsd=0)
     {
         fn=paste(OxCalDirectory,oxcalName,".oxcal",sep="")
         export <- file(fn) #create export file
-        cat("Plot(){\n",file=fn,append=FALSE) #Start Sequence#
+        cat("Options(){};\n",file=fn,append=FALSE) #Start Sequence#
+        cat("Plot(){\n",file=fn,append=TRUE) #Start Sequence#
+        if (curve=="Marine13")
+            {
+                cat('Curve("Marine13.14c");',file=fn,append=TRUE)
+                cat(paste('Delta_R(',DeltaR,',',DeltaRsd,');\n',sep=""),file=fn,append=TRUE)
+            }
+        if (curve=="ShCal13")
+            {
+                cat('Curve("ShCal13");',file=fn,append=TRUE)
+            }
+
+        if (curve=="IntCal13")
+            {
+                cat('Curve("IntCal13");',file=fn,append=TRUE)
+            }
         cat(paste('R_Date(','\"',id,'\",',date,',',error,');\n',sep=""),file=fn,append=TRUE)
         cat('};\n',file=fn,append=TRUE)
         excecuter=paste(OxCalExecute,paste(OxCalDirectory,oxcalName,".oxcal",sep=""))
         print("Running OxCal...")
         system(excecuter)
         text <- readLines(paste(OxCalDirectory,oxcalName,".js",sep=""),encoding="UTF-8")
-        start <- "ocd[2].likelihood.start"
-        resolution <- "ocd[2].likelihood.resolution"
-        prob <- "ocd[2].likelihood.prob"
-        probNorm <- "ocd[2].likelihood.probNorm"
+        start <- "ocd[3].likelihood.start"
+        resolution <- "ocd[3].likelihood.resolution"
+        prob <- "ocd[3].likelihood.prob"
+        probNorm <- "ocd[3].likelihood.probNorm"
+
+        if (curve=="Marine13")
+            {
+        start <- "ocd[4].likelihood.start"
+        resolution <- "ocd[4].likelihood.resolution"
+        prob <- "ocd[4].likelihood.prob"
+        probNorm <- "ocd[4].likelihood.probNorm"
+            }
 
         start.index=pmatch(start,text)
         start=text[start.index]
